@@ -1,0 +1,42 @@
+{
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es6": true
+    },
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+        "@typescript-eslint",
+        "prettier"
+    ],
+    "extends": [
+        "google"
+    ],
+    "globals": {
+        "Atomics": "readonly",
+        "SharedArrayBuffer": "readonly"
+    },
+    "parserOptions": {
+        "ecmaVersion": 2020
+    },
+    "rules": {
+        "prettier/prettier": [ "error", { "endOfLine": "auto" } ],
+        "@typescript-eslint/no-unused-vars": ["error", { "caughtErrors": "all", "caughtErrorsIgnorePattern": "^ignore", "ignoreRestSiblings": true }],
+        "arrow-parens": "off",
+        "camelcase": "off",
+        "comma-dangle": "off",
+        "indent": ["error", 4, { "SwitchCase": 1 }],
+        "linebreak-style": "off",
+        "max-len": ["error", 120],
+        "max-lines-per-function": ["warn", 30],
+        "new-cap": "off",
+        "no-tabs": ["error"],
+        "object-curly-spacing": ["error", "always"],
+        "operator-linebreak": "off",
+        "prefer-rest-params": "off",
+        "quote-props": ["error", "as-needed"],
+        "require-jsdoc": "off",
+        "space-before-function-paren": "off",
+        "valid-jsdoc": "off"
+    }
+}
