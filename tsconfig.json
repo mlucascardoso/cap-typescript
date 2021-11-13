@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "lib": ["ES2019"],
+        "module": "commonjs",
+        "target": "ES2019",
+        "esModuleInterop": true,
+        "inlineSourceMap": true,
+        "inlineSources": true,
+        "outDir": "./gen/srv/srv",
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "preserveConstEnums": true,
+        "skipLibCheck": true
+    },
+    "include": ["src"],
+    "exclude": ["node_modules"]
+}
