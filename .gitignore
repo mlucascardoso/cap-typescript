@@ -1,3 +1,6 @@
+gen/
+sqlite.db
+
 # Logs
 logs
 *.log
