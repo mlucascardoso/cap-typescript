@@ -1,0 +1,26 @@
+{
+    "build": {
+        "target": "gen"
+    },
+    "features": {
+        "assert_integrity": false
+    },
+    "hana": {
+        "deploy-format": "hdbtable"
+    },
+    "[production]": {
+        "requires": {
+            "db": {
+                "kind": "hana"
+            },
+            "uaa": {
+                "kind": "xsuaa"
+            }
+        }
+    },
+    "requires": {
+        "db": {
+            "kind": "sqlite"
+        }
+    }
+} 
