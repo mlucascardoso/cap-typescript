@@ -1,6 +1,6 @@
-import { readdirSync } from 'fs';
-import { resolve } from 'path';
-import { execSync } from 'child_process';
+const { readdirSync } = require('fs');
+const { resolve } = require('path');
+const { execSync } = require('child_process');
 
 const files = readdirSync(resolve(__dirname, '..', 'srv')).filter((file) => file.includes('.cds'));
 
