@@ -1,22 +1,8 @@
-import 'reflect-metadata';
-import './config/module-alias';
-import express from 'express';
-import { createCombinedHandler } from 'cds-routing-handlers';
-import cds from '@sap/cds';
+import { application } from './app';
 
 export class Server {
     public static async run() {
-        const app = express();
-
-        const hdl = createCombinedHandler({
-            handler: [__dirname + '/services/**/*.js', __dirname + '/handlers/**/*.js'],
-        });
-
-        await cds.connect('db');
-        await cds
-            .serve('all')
-            .in(app)
-            .with((srv) => hdl(srv));
+        const app = await application();
 
         // Run the server.
         const port = process.env.PORT || 3001;
