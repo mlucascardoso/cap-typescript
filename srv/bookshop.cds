@@ -18,7 +18,6 @@ service BookshopService {
         modifiedBy
     };
 
-    @requires: 'authenticated-user'
     action submitOrder(book : Books:id, quantity : Integer) returns {
         stock: Integer
     };
