@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import './config/module-alias';
 import express from 'express';
 import { createCombinedHandler } from 'cds-routing-handlers';
 import cds from '@sap/cds';
@@ -8,7 +9,7 @@ export class Server {
         const app = express();
 
         const hdl = createCombinedHandler({
-            handler: [__dirname + '/handlers/**/*.js'],
+            handler: [__dirname + '/services/**/*.js', __dirname + '/handlers/**/*.js'],
         });
 
         await cds.connect('db');
