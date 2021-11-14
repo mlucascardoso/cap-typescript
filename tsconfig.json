@@ -10,7 +10,11 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "preserveConstEnums": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["src/*"]
+        }
     },
     "include": ["src"],
     "exclude": ["node_modules"]
