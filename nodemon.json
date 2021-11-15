@@ -1,7 +1,8 @@
 {
     "watch": ["src/**/*", "srv/**/*"],
-    "ext": "*",
-    "exec": "npm run build:ts && node ./gen/srv/srv/server.js",
+    "ignore": "./src/entities/",
+    "ext": "csv,cds,ts",
+    "exec": "npm run build:local && node ./gen/srv/srv/server.js",
     "env": {
         "PORT": 4004,
         "NODE_ENV": "development"
