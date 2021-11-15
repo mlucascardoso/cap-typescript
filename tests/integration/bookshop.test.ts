@@ -1,5 +1,5 @@
 import supertest from 'supertest';
-import { application } from '../src/app';
+import { application } from '../../src/app';
 
 let app = null;
 

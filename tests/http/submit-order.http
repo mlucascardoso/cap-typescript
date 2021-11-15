@@ -1,0 +1,19 @@
+### Requires REST Client for VS Code
+### https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+###
+
+@host = http://localhost:4004
+
+### Submit order
+POST {{host}}/bookshop/submitOrder
+Accept: application/json
+Content-Type: application/json
+
+{ 
+  "book": "88d439f1-6b88-4f04-a900-381b836dfa51",
+  "quantity": 10 
+}
+
+### Read Books
+GET {{host}}/bookshop/Books(88d439f1-6b88-4f04-a900-381b836dfa51)
+
