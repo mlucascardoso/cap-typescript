@@ -374,11 +374,137 @@ Agora, vamos criar os scripts no nosso package.json:
 }
 ```
 
-cds init
+Agora que criamos os scripts no package.json, vamos criar um script para converter as entidades do cds para ts. Este script é necessário pois a biblioteca cds2types possui algumas limitações e uma delas é não conseguir converter `actions` e `functions` customizadas
+```bash
+cd scripts && touch convert-entities-to-ts.js
+```
 
-npm i @sap/audit-logging @sap/cds @sap/hana-client @sap/xsenv @sap/xssec cds-routing-handlers express npm-run-all passport reflect-metadata module-alias
+E vamos colocar a lógica para executar a lib de convertão de cds para typescript
+```javascript
+const { readdirSync, existsSync, mkdirSync } = require('fs');
+const { resolve } = require('path');
+const { execSync } = require('child_process');
 
-npm i -D @types/express @typescript-eslint/eslint-plugin @typescript-eslint/parser cds2types eslint eslint-config-google eslint-plugin-prettier git-commit-msg-linter jest nodemon prettier sqlite3 supertest typescript @types/jest
+const files = readdirSync(resolve(__dirname, '..', 'srv')).filter((file) => file.includes('.cds'));
 
-npm i -g hana-cli
-hana-cli createModule
+if (!existsSync(resolve(__dirname, '..', 'src', 'entities'))) {
+    mkdirSync(resolve(__dirname, '..', 'src', 'entities'));
+}
+
+for (const file of files) {
+    const srvPath = resolve(__dirname, '..', 'srv');
+    const srcPath = resolve(__dirname, '..', 'src');
+    const cdsToConvert = `--cds ${srvPath}/${file}`;
+    const fileWithoutExtension = file.split('.')[0];
+    const outputFile = `--output ${srcPath}/entities/${fileWithoutExtension}.ts`;
+    execSync(`npx cds2types ${cdsToConvert} ${outputFile} -f`);
+}
+
+execSync('cds build && cp .cdsrc.json gen/srv');
+```
+
+Agora vamos criar nosso primeiro custom handler. Este handler de exemplo, alterará o título de cada livro antes de exibir para o usuário final.
+
+Eu gosto de separar em services quando a lógica será aplicada diretamente no serviço principal e handlers quando trabalhamos com actions e functions. Veremos um exemplo em alguns instantes.
+
+```bash
+mkdir src/services && cd "$_" && touch bookshop.ts
+```
+
+E adicione o conteúdo do serviço
+```typescript
+import { Handler, AfterRead, Entities } from 'cds-routing-handlers';
+import { BookshopService } from '@/entities/bookshop';
+
+@Handler(BookshopService.SanitizedEntity.Books)
+export class BookService {
+    @AfterRead()
+    public async addDiscount(@Entities() books: BookshopService.Books[]): Promise<void> {
+        for (const book of books) {
+            if (book.stock > 111) {
+                book.title += ` -- 11% discount!`;
+            }
+        }
+    }
+}
+```
+
+Perceba que o typescript implicará com o import do nosso serviço, pois está apontando para uma pasta que não existe. Para isso precisamos fazer duas coisas
+
+Criar um arquivo de configuração para aceitar o `@` como um mapeamento de paths válido
+```bash
+mkdir src/config && cd "$_" && touch module-alias.ts
+```
+
+```typescript
+import { join } from 'path';
+import moduleAlias from 'module-alias';
+
+moduleAlias.addAlias('@', join(__dirname, '..'));
+```
+
+E precisamos rodar o script que criamos agora a pouco no nosso package.json
+```bash
+npm run build:local
+```
+
+Este script criará pra gente a pasta entities e dentro dela serão criadas as entidades que a gente expos anteriormente nos arquivos cds.
+
+Agora, precisamos apenas criar o server para que consigamos apontar estes serviços e handlers customizados para nosso código typescript
+
+```bash
+cd src && touch server.ts && touch app.ts
+```
+
+app.ts
+```typescript
+import 'reflect-metadata';
+import './config/module-alias';
+import express from 'express';
+import { createCombinedHandler } from 'cds-routing-handlers';
+import cds from '@sap/cds';
+
+export const application = async () => {
+    const app = express();
+
+    const hdl = createCombinedHandler({
+        handler: [__dirname + '/services/**/*.js', __dirname + '/handlers/**/*.js'],
+    });
+
+    await cds.connect('db');
+    await cds
+        .serve('all')
+        .in(app)
+        .with((srv) => hdl(srv));
+
+    return app;
+};
+```
+
+server.ts
+```typescript
+import { application } from './app';
+
+export class Server {
+    public static async run() {
+        const app = await application();
+        const port = process.env.PORT || 3001;
+        app.listen(port, async () => {
+            console.info(`Server is listing at http://localhost:${port}`);
+        });
+    }
+}
+
+Server.run();
+```
+
+Pronto!
+Nossa API já pode ser consumida com custom handlers e services escritos em typescript!
+
+Você pode alimentar este banco de dados criando arquivos csv dentro da pasta db/data. Você pode encontrar um exemplo [aqui](https://github.com/mlucascardoso/cap-typescript/tree/main/db/data)
+
+Após alimentar o banco de dados, inicie a API com o comando `npm run dev` e acesse [localhost](http://localhost:4004/bookshop/Books)
+
+Perceba que nossa lógica customizada já está funcionando
+
+![image](./public/images/books.png)
