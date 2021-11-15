@@ -420,6 +420,7 @@ import { BookshopService } from '@/entities/bookshop';
 export class BookService {
     @AfterRead()
     public async addDiscount(@Entities() books: BookshopService.Books[]): Promise<void> {
+        books = !Array.isArray(books) ? [books] : books;
         for (const book of books) {
             if (book.stock > 111) {
                 book.title += ` -- 11% discount!`;
@@ -509,19 +510,98 @@ Perceba que nossa lógica customizada já está funcionando
 
 ![image](./public/images/books.png)
 
+## Custom action
+
+Agora que já vimos como criar um serviço customizado, vamos ver como ficaria uma action customizada
+
+```bash
+mkdir -p src/handlers/actions && cd "$_" && touch submit-order.ts
+```
+
+Vamos editar nosso arquivo bookshop cds dentro de srv
+
+srv/bookshop.cds
+```typescript
+    action submitOrder(book: Books:id, quantity: Integer) returns {
+        stock: Integer
+    };
+```
+
+src/handlers/actions/submit-order.ts
+```typescript
+import cds from '@sap/cds';
+import { Action, Handler, Param, Req } from 'cds-routing-handlers';
+import { BookshopService, bookshop } from '@/entities/bookshop';
+import { Request } from '@sap/cds/apis/services';
+
+@Handler()
+export class SubmitOrderHandler {
+    @Action(BookshopService.ActionSubmitOrder.name)
+    public async handle(
+        @Param(BookshopService.ActionSubmitOrder.paramBook) bookId: bookshop.Books['id'],
+        @Param(BookshopService.ActionSubmitOrder.paramQuantity) quantity: number,
+        @Req() req: Request
+    ): Promise<any> {
+        if (!bookId || !quantity) {
+            return req.reject(400, 'Please, provide all mandatory fields');
+        }
+
+        const affectedRows = await cds
+            .update(BookshopService.Entity.Books)
+            .with({ stock: { '-=': quantity } })
+            .where({ id: bookId, stock: { '>=': quantity } });
+
+        if (affectedRows < 0) {
+            return req.reject(409, `${quantity} exceeds stock for book ${bookId}`);
+        }
+    }
+}
+```
+
+Perceba como o código fica bem isolado e de fácil entendimento. Vamos testar!
+
+```bash
+mkdir tests/http && cd "$_" && touch submit-order.http
+```
+
+```http
+### Requires REST Client for VS Code
+### https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+###
+
+@host = http://localhost:4004
+
+### Submit order
+POST {{host}}/bookshop/submitOrder
+Accept: application/json
+Content-Type: application/json
+
+{ 
+  "book": "88d439f1-6b88-4f04-a900-381b836dfa51",
+  "quantity": 10 
+}
+
+### Read Books
+GET {{host}}/bookshop/Books(88d439f1-6b88-4f04-a900-381b836dfa51)
+```
+
+![image](./public/images/submit-order.png)
+
+![image](./public/images/read-books.png)
+
 ## Testing
 
 Para realizar os testes da nossa aplicação, já deixamos previamente configurado jest. É um framework de testes bem famoso e de fácil entendimento
 
 Vamos criar um teste de exemplo que vai consumir nossa API real e verificar se está tudo certo
 ```bash
-mkdir tests && cd "$_" && touch bookshop.test.ts
+mkdir tests/integration && cd "$_" && touch bookshop.test.ts
 ```
 
 bookshop.test.ts
 ```typescript
 import supertest from 'supertest';
-import { application } from '../src/app';
+import { application } from '../../src/app';
 
 let app = null;
 
