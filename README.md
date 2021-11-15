@@ -367,8 +367,8 @@ Agora, vamos criar os scripts no nosso package.json:
     "build:db-local": "cds deploy --to sqlite:sqlite.db --no-save --with-mocks",
     "eslint:ci": "eslint --fix src",
     "test": "jest --passWithNoTests --silent --runInBand",
-    "test:unit": "npm test -- --watch -c jest-unit.config.js",
-    "test:integration": "npm test -- --watch -c jest-integration.config.js",
+    "test:unit": "npm test -- --watchAll -c jest-unit.config.js",
+    "test:integration": "npm test -- --watchAll -c jest-integration.config.js",
     "test:staged": "npm test -- --findRelatedTests",
     "test:ci": "npm test -- --coverage"
 }
@@ -508,3 +508,45 @@ Após alimentar o banco de dados, inicie a API com o comando `npm run dev` e ace
 Perceba que nossa lógica customizada já está funcionando
 
 ![image](./public/images/books.png)
+
+## Testing
+
+Para realizar os testes da nossa aplicação, já deixamos previamente configurado jest. É um framework de testes bem famoso e de fácil entendimento
+
+Vamos criar um teste de exemplo que vai consumir nossa API real e verificar se está tudo certo
+```bash
+mkdir tests && cd "$_" && touch bookshop.test.ts
+```
+
+bookshop.test.ts
+```typescript
+import supertest from 'supertest';
+import { application } from '../src/app';
+
+let app = null;
+
+describe('Books', () => {
+    beforeAll(async () => {
+        app = await application();
+    });
+
+    it('should return 200 if books were listed correctly', async () => {
+        const api = supertest(app) as any;
+        const response = await api.get('/bookshop/Books');
+        expect(response.statusCode).toEqual(200);
+    });
+
+    afterEach((done) => {
+        done();
+    });
+});
+```
+
+Lembra que a gente configurou o app.ts separado do servidor? Aquela configuração foi proposital, pois conseguimos utilizar a mesma configuração para nossos testes :)
+
+Rodando os testes
+```bash
+npm run test:integration
+```
+
+Se você criar testes unitários, também é possível. Basta criar o arquivo com o seguinte padrão `<filename>.unit.ts` e rodar os testes com `npm run test:unit`
