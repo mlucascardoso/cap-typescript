@@ -149,7 +149,7 @@ npm i @sap/cds @sap/hana-client @sap/xsenv @sap/xssec cds-routing-handlers expre
 npm i -D @types/express @typescript-eslint/eslint-plugin @typescript-eslint/parser cds2types eslint eslint-config-google eslint-plugin-prettier git-commit-msg-linter jest nodemon prettier sqlite3 supertest typescript @types/jest ts-jest
 ```
 
-Explicando as dependencias:
+Explaning dependencies:
 ```bash
 1) @sap/cds - command line tool so anyone can run the project without having to install cds globally
 2) @sap/hana-client - library used to connect to the SAP Hana database (used only in a productive environment)
