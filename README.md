@@ -1,36 +1,34 @@
-No post de hoje iremos mostrar um pouco como trabalhamos aqui na VAAES.
+In today's post we'll show you how we work here at VAAES.
 
-Muitos de vocês nunca ouviram falar ou não sabem quais ferramentas de desenvolvimento a SAP nos disponibiliza para desenvolvimento de aplicações, então resolvi trazer hoje um pouco sobre Cloud Application Programming Model ou CAP para os íntimos.
+Many of you have never heard or don't know which development tools SAP makes available to us for application development, so I decided to bring a little bit about the Cloud Application Programming Model or just CAP today.
 
-CAP é uma ferramenta que utilizamos para desenvolver API's de maneira simples e prática. Ele não está disponível somente em Java, mas também de NodeJs e todos sabemos como NodeJs é muito comum no desenvolvimento cloud. Trabalhar com Javascript no backend é sensacional, porém à medida que os projetos ficam maiores, a tipagem fraca do Javascript pode ser desafiadora. Então, o Typescript entra na jogada para nos fornecer tipagem mais robusta. E confesso que sou fã dessa tecnologia.
+CAP is a tool we use to develop API's in a simple and practical way. It is not only available in Java, but also from NodeJs and we all know how NodeJs is very common in cloud development. Working with Javascript in the backend is great, but as projects get bigger, weakly typing of Javascript can be challenging. So Typescript comes into play to provide us with more robust typing. And I confess that I'm a fan of this technology.
 
-Aqui podemos ver a estrutura de pastas de um projeto normal CAP. Perceba que os arquivos `.cds` e `.js` ficam misturados dentro da pasta srv. Infelizmente não podemos movê-los para diferentes pois o CAP não consegue reconhecê-los.
+Here we can see the folder structure of a normal CAP project. Note that the `.cds` and `.js` files are mixed inside the srv folder. Unfortunately we can't move them to different folders because CAP wouldn't recognize them.
 
 ![Normal CAP project](./public/images/normal-cap-project.png)
 
-Estrutura do projeto
+## Project structure
 
-Além disso, os arquivos de `handlers` em Javascript acabavam realizando todas as lógicas num só lugar. Desde buscar o dado no banco de dados, regras de negócio, etc. E isso não é tão legal para manutenção de código. Como podemos ver no exemplo abaixo:
+Furthermore, the `handlers` files in Javascript ended up doing all the logic in one place. From fetching the data from the database, business rules, etc. And that's not so cool for code maintenance. As we can see in the example below:
 
 ![Js code 1](./public/images/js-code-1.png)
-Código em javascript
 
 ![Js code 2](./public/images/js-code-2.png)
-Código em javascript
 
 ## Code
 
-Sem mais enrolação, vamos ao que interessa. Iremos criar o famoso exemplo de livraria proposto pela SAP - O bookshop.
+No more stalling, let's get down to business. We are going to create the famous `bookshop` example proposed by SAP.
 
->Nota: Este tutorial foi feito com NodeJs v14.17.6 e @sap/cds 5.4.3
+>Note: This tutorial was made with NodeJs v14.17.6 and @sap/cds 5.4.3
 
 ![Js code 2](./public/images/cds-version.png)
 
-Primeiramente, vamos criar uma pasta para nosso novo projeto:
+First, let's create a folder for our new project:
 
 ![Js code 2](./public/images/mkdir.png)
 
-Agora, vamos instalar globalmente a biblioteca de linha de comando do CAP:
+Now, let's globally install the CAP command line library:
 
 ```bash
 npm i -g @sap/cds-dk hana-cli
@@ -38,26 +36,26 @@ npm i -g @sap/cds-dk hana-cli
 
 ![Js code 2](./public/images/cds-global.png)
 
-Feito isso, vamos criar o esqueleto do projeto:
+Once that's done, let's create the skeleton of the project:
 ```bash
 cds init
 ```
 
 ![image](./public/images/cds-init.png)
 
-Agora, vamos criar o modulo db. Este comando irá criar os arquivos necessários para o módulo db rodar corretamente:
+Now, let's create the db module. This command will create the files necessary for the db module to run correctly:
 ```bash
 hana-cli createModule
 ```
 
 ![image](./public/images/hana-cli-createModule.png)
 
-Com o módulo db pronto, vamos criar nosso arquivo cds dentro do módulo db onde criaremos as entidades da nossa livraria posteriormente:
+With the db module ready, let's create our cds file inside the db module where we will create the entities of our library later:
 ```bash
-cd db && mkdir cds && cd cds && touch bookshop.cds
+mkdir db/cds && cd "$_" && touch bookshop.cds
 ```
 
-Agora, vamos preencher o arquivo `bookshop.cds` com as entidades:
+Now, let's fill the `bookshop.cds` file with the entities:
 ```typescript
 using {
     Currency,
@@ -96,14 +94,14 @@ entity Genres: sap.common.CodeList {
 }
 ```
 
->Nota: Para saber mais a respeito dos arquivos cds, visite esta [página](https://cap.cloud.sap/docs/)
+>Note: To learn more about cds files, visit this [page](https://cap.cloud.sap/docs/)
 
-Vamos criar o serviço para expor nossas entidades:
+Let's create the service to expose our entities:
 ```bash
  cd ../../srv/ && touch bookshop.cds
 ```
 
-Preencha o conteúdo do arquivo criado com:
+Fill in the content of the created file with:
 ```typescript
 using {bookshop} from '../db/cds/bookshop';
 
@@ -124,24 +122,24 @@ service BookshopService {
 }
 ```
 
-Rodando o serviço:
+Running the service:
 ```bash
 cd .. && cds run
 ```
 
 ![image](./public/images/cds-run.png)
 
-Nosso serviço foi exposto na porta 4004 (padrão):
+Our service was exposed on port 404 (default):
 
 ![image](./public/images/service-running.png)
 
-Porém, ao tentarmos acessar alguma das entidades expostas, perceba que ocorrerá um erro. Isto ocorre porque ainda não instalamos o banco de dados para rodar nossa aplicação.
+However, when we try to access some of the exposed entities, notice that an error will occur. This is because we haven't installed the database to run our application yet.
 
 ![image](./public/images/db-error.png)
 
 ![image](./public/images/db-error-2.png)
 
-Agora que temos nossa modelagem e o serviço prontos, vamos adicionar algumas dependências para que consigamos rodar nossa aplicação corretamente:
+Now that we have our modeling and service ready, let's add some dependencies so we can run our application correctly:
 
 ```bash
 # Production dependencies
@@ -153,22 +151,22 @@ npm i -D @types/express @typescript-eslint/eslint-plugin @typescript-eslint/pars
 
 Explicando as dependencias:
 ```bash
-1) @sap/cds - linha de comando para que qualquer um consiga rodar o projeto sem precisar instalar o cds globalmente
-2) @sap/hana-client - biblioteca utilizada para conectar ao banco hana da SAP (utilizada somente em ambiente produtivo)
-3) @sap/xsenv - utilizada para buscar variáveis de ambiente dentro do container deployado no Cloud Foundry (Cloud platform da SAP)
-4) @sap/xssec e passport - Responsáveis pela segurança da aplicação
-5) cds-routing-handlers e express - Framework para expor nossa API e redirecionar nossos custom handlers para onde quisermos
-6) reflect-metadata - Utilizada para vários propósitos, mas  no nosso projeto será utilizada para emitir dados de decorators
-7) module-alias - Como utilizaremos typescript, este módulo nos permite cadastrar atalhos para acessarmos as pastas dentro do nosso código typescript. Além disso, a transpilação permite o código continuar funcionando em javascript.
+1) @sap/cds - command line tool so anyone can run the project without having to install cds globally
+2) @sap/hana-client - library used to connect to the SAP Hana database (used only in a productive environment)
+3) @sap/xsenv - used to fetch environment variables inside the deployed container in Cloud Foundry (Cloud platform from SAP)
+4) @sap/xssec e passport - Responsible for application security
+5) cds-routing-handlers e express - Framework to expose our API and redirect our custom handlers wherever we want
+6) reflect-metadata - Used for various purposes, but in our project it will be used to output data from decorators
+7) module-alias - As we will use typescript, this module allows us to register shortcuts to access folders inside our typescript code. Also, transpilation allows the code to continue working in javascript.
 ```
 
-Após a instalação das dependências, vamos criar mais duas pastas na raíz do projeto:
+After installing the dependencies, let's create two more folders at the root of the project:
 
 ```
 mkdir src && mkdir scripts
 ```
 
-Vamos adicionar alguns arquivos responsáveis pela configuração do nosso ambiente de desenvolvimento:
+Let's add some files responsible for configuring our development environment:
 
 .cdsrc.json
 ```JSON
@@ -355,7 +353,7 @@ module.exports = {
 };
 ```
 
-Agora, vamos criar os scripts no nosso package.json:
+Now, let's create the scripts in our package.json:
 ```JSON
 "scripts": {
     "start": "CDS_ENV=production NODE_ENV=production cds run",
@@ -374,12 +372,12 @@ Agora, vamos criar os scripts no nosso package.json:
 }
 ```
 
-Agora que criamos os scripts no package.json, vamos criar um script para converter as entidades do cds para ts. Este script é necessário pois a biblioteca cds2types possui algumas limitações e uma delas é não conseguir converter `actions` e `functions` customizadas
+Now that we've created the scripts in package.json, let's create a script to convert the entities from cds to ts. This script is necessary because the `cds2types` library has some limitations and one of them is not being able to convert custom `actions` and `functions`
 ```bash
 cd scripts && touch convert-entities-to-ts.js
 ```
 
-E vamos colocar a lógica para executar a lib de convertão de cds para typescript
+And let's put the logic to run the cds to typescript converting lib:
 ```javascript
 const { readdirSync, existsSync, mkdirSync } = require('fs');
 const { resolve } = require('path');
@@ -403,15 +401,15 @@ for (const file of files) {
 execSync('cds build && cp .cdsrc.json gen/srv');
 ```
 
-Agora vamos criar nosso primeiro custom handler. Este handler de exemplo, alterará o título de cada livro antes de exibir para o usuário final.
+Now let's create our first custom handler. This example handler will change the title of each book before showing it to the end user.
 
-Eu gosto de separar em services quando a lógica será aplicada diretamente no serviço principal e handlers quando trabalhamos com actions e functions. Veremos um exemplo em alguns instantes.
+I like to separate into services when the logic will be applied directly to the main service and handlers when working with actions and functions. We'll look at an example in a moment.
 
 ```bash
 mkdir src/services && cd "$_" && touch bookshop.ts
 ```
 
-E adicione o conteúdo do serviço
+And add the content of the service:
 ```typescript
 import { Handler, AfterRead, Entities } from 'cds-routing-handlers';
 import { BookshopService } from '@/entities/bookshop';
@@ -430,9 +428,9 @@ export class BookService {
 }
 ```
 
-Perceba que o typescript implicará com o import do nosso serviço, pois está apontando para uma pasta que não existe. Para isso precisamos fazer duas coisas
+Note that the typescript will complain with the import of our service, as it is pointing to a folder that does not exist. For this we need to do two things
 
-Criar um arquivo de configuração para aceitar o `@` como um mapeamento de paths válido
+Create a config file to accept `@` as a valid path mapping:
 ```bash
 mkdir src/config && cd "$_" && touch module-alias.ts
 ```
@@ -444,14 +442,14 @@ import moduleAlias from 'module-alias';
 moduleAlias.addAlias('@', join(__dirname, '..'));
 ```
 
-E precisamos rodar o script que criamos agora a pouco no nosso package.json
+And we need to run the script we just created in our package.json:
 ```bash
 npm run build:local
 ```
 
-Este script criará pra gente a pasta entities e dentro dela serão criadas as entidades que a gente expos anteriormente nos arquivos cds.
+This script will create for us the entities folder and inside it will be created the entities that we exposed previously in the cds files.
 
-Agora, precisamos apenas criar o server para que consigamos apontar estes serviços e handlers customizados para nosso código typescript
+Now, we just need to create the server so that we can point these services and custom handlers to our typescript code.
 
 ```bash
 cd src && touch server.ts && touch app.ts
@@ -499,26 +497,27 @@ export class Server {
 Server.run();
 ```
 
-Pronto!
-Nossa API já pode ser consumida com custom handlers e services escritos em typescript!
+All done!
+Our API can already be consumed with custom handlers and services written in typescript!
 
-Você pode alimentar este banco de dados criando arquivos csv dentro da pasta db/data. Você pode encontrar um exemplo [aqui](https://github.com/mlucascardoso/cap-typescript/tree/main/db/data)
 
-Após alimentar o banco de dados, inicie a API com o comando `npm run dev` e acesse [localhost](http://localhost:4004/bookshop/Books)
+You can feed this database by creating csv files inside the db/data folder. You can find an example [here](https://github.com/mlucascardoso/cap-typescript/tree/main/db/data)
 
-Perceba que nossa lógica customizada já está funcionando
+After loading the database, start the API with the command `npm run dev` and access [localhost](http://localhost:4004/bookshop/Books)
+
+Our custom logic is already working
 
 ![image](./public/images/books.png)
 
 ## Custom action
 
-Agora que já vimos como criar um serviço customizado, vamos ver como ficaria uma action customizada
+Now that we've seen how to create a custom service, let's see what a custom action would look like
 
 ```bash
 mkdir -p src/handlers/actions && cd "$_" && touch submit-order.ts
 ```
 
-Vamos editar nosso arquivo bookshop cds dentro de srv
+Let's edit our bookshop cds file inside `srv`
 
 srv/bookshop.cds
 ```typescript
@@ -558,7 +557,7 @@ export class SubmitOrderHandler {
 }
 ```
 
-Perceba como o código fica bem isolado e de fácil entendimento. Vamos testar!
+Notice how the code is very isolated and easy to understand. Lets test!
 
 ```bash
 mkdir tests/http && cd "$_" && touch submit-order.http
@@ -591,9 +590,9 @@ GET {{host}}/bookshop/Books(88d439f1-6b88-4f04-a900-381b836dfa51)
 
 ## Testing
 
-Para realizar os testes da nossa aplicação, já deixamos previamente configurado jest. É um framework de testes bem famoso e de fácil entendimento
+To implement the tests of our application, we have already configured jest in advance. It's a very famous and easy-to-understand testing framework.
 
-Vamos criar um teste de exemplo que vai consumir nossa API real e verificar se está tudo certo
+Let's create an example test that will consume our real API and make sure it's all right:
 ```bash
 mkdir tests/integration && cd "$_" && touch bookshop.test.ts
 ```
@@ -622,11 +621,11 @@ describe('Books', () => {
 });
 ```
 
-Lembra que a gente configurou o app.ts separado do servidor? Aquela configuração foi proposital, pois conseguimos utilizar a mesma configuração para nossos testes :)
+Remember that we configured app.ts separately from the server? That configuration was on purpose, as we were able to use the same configuration for our tests :)
 
-Rodando os testes
+Running the tests
 ```bash
 npm run test:integration
 ```
 
-Se você criar testes unitários, também é possível. Basta criar o arquivo com o seguinte padrão `<filename>.unit.ts` e rodar os testes com `npm run test:unit`
+If you create unit tests, it's also possible. Just create the file with the following pattern `<filename>.unit.ts` and run the tests with `npm run test:unit`
